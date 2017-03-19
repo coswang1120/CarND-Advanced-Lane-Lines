@@ -1,5 +1,5 @@
-##Advanced Lane Finding
-###Author: HSIN-CHENG _olala7846@gmail.com_
+## Advanced Lane Finding
+### Author: HSIN-CHENG _olala7846@gmail.com_
 
 ---
 
@@ -34,16 +34,16 @@ The goals / steps of this project are the following:
 [video]: ./results.mp4 "Video"
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
-###Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
+### Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
 
 ---
-###Writeup / README
+### Writeup / README
 
-####1. Provide a `writeup_resport.md` that includes all the rubric points and how I addressed each one.  
+#### 1. Provide a `writeup_resport.md` that includes all the rubric points and how I addressed each one.  
 You're reading it!
-###Camera Calibration
+### Camera Calibration
 
-####1. Briefly state how you computed the camera matrix and distortion coefficients. Provide an example of a distortion corrected calibration image.
+#### 1. Briefly state how you computed the camera matrix and distortion coefficients. Provide an example of a distortion corrected calibration image.
 
 The code for this step is contained in the `P4.ipynb` first code cell `LaneFinder` class `calibrate_camera` method.
 
@@ -58,7 +58,7 @@ Undistorted Image:
 
 I also store the distortion matrix in a pickle file named `distort_mtx.p` to avoid recalculate matrix every time.
 
-###Pipeline (single images)
+### Pipeline (single images)
 
 I implemented all pipeline steps as seperate class methods inside `LaneFinder` class and visualizes the result on `./test_images` in the second section of my `P4.jpynb` notebook.
 I will only demonstrate my pipline using the `./test_images/test1.jpg` in my report, for results of other images, please reference the 2nd section of my nodebook
@@ -80,10 +80,10 @@ The implementation detail is inside the `calibrate_camera` and `undistort` metho
 ![alt text][image2.1]
 
 
-####2.1 Describe how (and identify where in your code) you used color transforms, gradients or other methods to create a thresholded binary image.  Provide an example of a binary image result.
+#### 2.1 Describe how (and identify where in your code) you used color transforms, gradients or other methods to create a thresholded binary image.  Provide an example of a binary image result.
 I actually chosed to do the color transform and thresholding step **after** doing perspective transform, so I'll describe it in section 3.1 after section 3.
 
-####3. Describe how (and identify where in your code) you performed a perspective transform and provide an example of a transformed image.
+#### 3 . Describe how (and identify where in your code) you performed a perspective transform and provide an example of a transformed image.
 
 The code for my perspective transform sits inside the `perspective_transform` method of `LaneFinder` class, it calls the `get_perspective_transform_matrix` method to generate the transform matrix. Both methods supports a keyword argument `reverse` refauts to `False`, setting `reverse=True` does the reverse perspective transform, which will be used while warping the found lane line back to the original image later.
 The source and destination points in the `get_perspective_transform_matrix` method are also hand picked using `ipywidgets`.
@@ -100,7 +100,7 @@ I verified that my perspective transform was working as expected by drawing the 
 ##### Warped test1 image
 ![alt text][image2.4]
 
-####3.1. Color thresholding
+#### 3.1. Color thresholding
 After perspective transform, I used a combination of color thresholds (on the S channel) and sobel gradient thresholds (on L channel) on the HLS color space to detect line pixels. The S channel thresholding did well on most cases but failed to detect correctly under massive shadows on the road, so I used the L channel gradient magnitude and direction thresholding to complement on that part. I hand picked the parameters using `ipywidgets` library.
 Please see the `combined_thresholding`, `l_direction` and `s_magnitude` methods for more implementaiton detail. 
 The result looks like this.
@@ -112,27 +112,27 @@ The result looks like this.
 For more stacked images, please see the second section of my [notebook](./P4.ipynb)
 
 
-####4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?
+#### 4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?
 
 For finding the lane lines, I first use a histogram search to find lane lines naively, once I got an approximately position about the lines, I use a convolutional search to find a more accurate position about the lines. The implementaion detail is inside the `find_lines`, `histogram_find_lines` and `convolution_find_lines` methods of the **LaneFinder** class
 
 I verified this by visualizing the results:
-#####Original image
+##### Original image
 ![alt text][image2.5.1]
-#####Histogram search
+##### Histogram search
 ![alt text][image2.5.2]
-#####Convolutional search
+##### Convolutional search
 ![alt text][image2.5.3]
 Again, more visualiztion samples are under the 2nd section of my [notebook](./P4.ipynb)
 
-####5. Describe how (and identify where in your code) you calculated the radius of curvature of the lane and the position of the vehicle with respect to center.
+#### 5. Describe how (and identify where in your code) you calculated the radius of curvature of the lane and the position of the vehicle with respect to center.
 
 I calculate the radius of the curvature by calculating the second dirivitive of the fitted polynomial over the bottom of the fitted line, and I assumed the warped pixel space has `30/720` meters per pixel height and `3.7/700` meters per pixel width. (please see the `curvature_radius` method in the **Line** class for more implementaion detail).
 As the offset to the center, I calculate the x pixel at the bottom of both lines and average them as the center of the lines, and convert the pixel difference between center of the lines and center of the image into meters.
 See `img_pipeline` for more detail
 The result will be demonstrated in the next section.
 
-####6. Provide an example image of your result plotted back down onto the road such that the lane area is identified clearly.
+#### 6. Provide an example image of your result plotted back down onto the road such that the lane area is identified clearly.
 
 I plotted back the road section using the same warping function as doing perspective transform but with keyword parameter `inveres=True`. And visualized it on the origin undistorted image using `cv2.addWeighted(undist, 1.0, road, 0.3, 0)`
 please reference `img_pipeline` for more detail
@@ -141,18 +141,18 @@ please reference `img_pipeline` for more detail
 
 ---
 
-###Pipeline (video)
+### Pipeline (video)
 
-####1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (wobbly lines are ok but no catastrophic failures that would cause the car to drive off the road!).
+#### 1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (wobbly lines are ok but no catastrophic failures that would cause the car to drive off the road!).
 
 Here's my result  [video] or [youtube link](https://youtu.be/MIyqcMWk0jo)
 
 
 ---
 
-###Discussion
+### Discussion
 
-####1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
+#### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
 First I implemented all steps as the course material and use the `ipywidgets.interact` to find the best parameters for thresholding and perspective transform on jupyter notebook, but I soon find out that the thresholded lines become thicker or even two seperate liens after perspective transform, so I decided to move the perspective transform step forward before the thresholding step. This helps me tune the thresholding parameters more focus on only the road and lanes.
 
