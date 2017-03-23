@@ -96,7 +96,7 @@ class LaneFinder():
 
     def undistort(self, img):
         """Undistort image using camera matrix"""
-        return self.camera_calibrator.undistort(img)
+        return self.camera_calibrator.undistort_image(img)
 
     def s_magnitude(self, img):
         """Returns magnitude thresholded binary image of
@@ -150,15 +150,9 @@ class LaneFinder():
         if reverse:
             matrix_key = 'reverse_perspective_transform_mtx'
 
-        matrix = self.getattr(matrix_key, None)
+        matrix = getattr(self, matrix_key, None)
         if matrix:
             return matrix
-
-        # if matrix already calculated, use it.
-        if self.perspective_transform_mtx and not reverse:
-            return self.perspective_transform_mtx
-        elif self.rev_perspective_transform_mtx and reverse:
-            return self.rev_perspective_transform_mtx
 
         # no previous stored matrix, calculate one
         tls = (563, 470)  # top left source point
@@ -186,7 +180,7 @@ class LaneFinder():
             transform_mtx = cv2.getPerspectiveTransform(src, dst)
 
         # save matrix for later use
-        self.setattr(matrix_key, transform_mtx)
+        setattr(self, matrix_key, transform_mtx)
         return transform_mtx
 
     def perspective_transform(self, img, reverse=False):

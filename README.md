@@ -4,6 +4,11 @@ This project was forked from [Udacity](https://github.com/udacity/CarND-Advanced
 ## Overview
 In this project, I used computer vision techniques like edge detection, perspective transform, camera calibration ... to detect highway lane informations (e.g. position, curvature ...) using pure camera data.
 
+## How To
+1. Setup environment using [Udacity Starter Kit](https://github.com/udacity/CarND-Term1-Starter-Kit)
+2. start docker by running `docker run -it --rm -p 8888:8888 -v `pwd`:/src udacity/carnd-term1-starter-kit bash`
+3. run `python image_pipeline.py`
+
 ## The Project
 * Project report in [writeup_report.md](./writeup_report.md)
 * Video pipeline source code in [P4.ipynb](./P4.ipynb)

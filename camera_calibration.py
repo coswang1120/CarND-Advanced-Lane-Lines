@@ -54,7 +54,7 @@ class CameraCalibrator():
             pickle.dump(self.camera_matrix, open(dist_mtx_file, 'wb'))
 
     def undistort_image(self, img):
-        if self.camera_matrix is None:
+        if not getattr(self, 'camera_matrix', None):
             self.calibrate_camera()
 
         mtx = self.camera_matrix['mtx']
