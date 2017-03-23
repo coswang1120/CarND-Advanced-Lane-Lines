@@ -151,7 +151,7 @@ class LaneFinder():
             matrix_key = 'reverse_perspective_transform_mtx'
 
         matrix = getattr(self, matrix_key, None)
-        if matrix:
+        if matrix is not None:
             return matrix
 
         # no previous stored matrix, calculate one

@@ -5,9 +5,11 @@ import cv2
 import numpy as np
 from lanelines import LaneFinder
 
+lf = LaneFinder()
+
 
 def img_pipeline(img, visualize=False):
-    lf = LaneFinder()
+
     undist = lf.undistort(img)
     warped = lf.perspective_transform(undist)
     combined_binary = lf.combined_thresholding(warped)
