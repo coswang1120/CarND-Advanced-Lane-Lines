@@ -45,7 +45,7 @@ class Line():
 
     def append_fit(self, line_fit):
         """Record new fitted line after sanity check"""
-        if not self.line_valid(line_fit):
+        if len(self.recent_nfits) > 0 and self.line_valid(line_fit):
             if self.last_found:
                 self.recent_nfits.append(None)
                 self.last_found = False

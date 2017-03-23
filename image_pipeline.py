@@ -54,6 +54,6 @@ def img_pipeline(img, visualize=False):
 
 # NOTE: f1_image function expects color images!!
 outfile = 'extracted_results.mp4'
-clip1 = VideoFileClip("project_video.mp4")
+clip1 = VideoFileClip("challenge_video.mp4").subclip(0, 5)
 white_clip = clip1.fl_image(img_pipeline)
 white_clip.write_videofile(outfile, audio=False)
