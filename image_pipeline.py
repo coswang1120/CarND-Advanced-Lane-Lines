@@ -1,16 +1,20 @@
 # -*- coding: utf-8 -*-
-
+from lanelines import LaneFinder
 from moviepy.editor import VideoFileClip
+from camera_calibration import CameraCalibrator
 import cv2
 import numpy as np
-from lanelines import LaneFinder
 
 lf = LaneFinder()
+INPUT_FILE_NAME = 'project_video.mp4'
+OUTPUT_FILE_NAME = 'project_result.mp4'
+
+camera_calibrator = CameraCalibrator()
 
 
-def img_pipeline(img, visualize=False):
+def lane_detection(img, visualize=False):
 
-    undist = lf.undistort(img)
+    undist = camera_calibrator.undistort_image(img)
     warped = lf.perspective_transform(undist)
     combined_binary = lf.combined_thresholding(warped)
     left_fit, right_fit = lf.find_lines(combined_binary)
@@ -52,8 +56,8 @@ def img_pipeline(img, visualize=False):
     return result
 
 
-# NOTE: f1_image function expects color images!!
-outfile = 'extracted_results.mp4'
-clip1 = VideoFileClip("project_video.mp4")
-white_clip = clip1.fl_image(img_pipeline)
-white_clip.write_videofile(outfile, audio=False)
+if __name__ == "__main__":
+    camera_calibrator.calc_dist_matrix()
+    clip1 = VideoFileClip(INPUT_FILE_NAME).subclip(0, 5)
+    white_clip = clip1.fl_image(lane_detection)
+    white_clip.write_videofile(OUTPUT_FILE_NAME, audio=False)

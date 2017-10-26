@@ -22,7 +22,7 @@ dist_mtx_file = 'camera_matrix.p'
 
 class CameraCalibrator():
 
-    def calibrate_camera(self, force=False):
+    def calc_dist_matrix(self, force=False):
         """Calculate distortion matrix and save to file"""
         if os.path.isfile(dist_mtx_file):
             self.camera_matrix = pickle.load(open(dist_mtx_file, 'rb'))
@@ -55,7 +55,7 @@ class CameraCalibrator():
 
     def undistort_image(self, img):
         if not getattr(self, 'camera_matrix', None):
-            self.calibrate_camera()
+            self.calc_dist_matrix()
 
         mtx = self.camera_matrix['mtx']
         dist = self.camera_matrix['dist']
@@ -65,4 +65,4 @@ class CameraCalibrator():
 if __name__ == "__main__":
 
     calibrator = CameraCalibrator()
-    calibrator.calibrate_camera(force=False)
+    calibrator.calc_dist_matrix(force=False)

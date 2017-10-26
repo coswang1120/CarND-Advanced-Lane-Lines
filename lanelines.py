@@ -1,7 +1,6 @@
 import numpy as np
 import cv2
 from collections import deque
-from camera_calibration import CameraCalibrator
 
 
 class Line():
@@ -92,11 +91,6 @@ class LaneFinder():
         self.sobel_kernel = 7
         self.m_thresh = (14, 255)
         self.d_thresh = (0.0, 0.73)
-        self.camera_calibrator = CameraCalibrator()
-
-    def undistort(self, img):
-        """Undistort image using camera matrix"""
-        return self.camera_calibrator.undistort_image(img)
 
     def s_magnitude(self, img):
         """Returns magnitude thresholded binary image of
