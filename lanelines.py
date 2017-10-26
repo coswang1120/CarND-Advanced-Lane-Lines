@@ -139,52 +139,6 @@ class LaneFinder():
         combined_binary[(s_mag == 1) | (l_dir == 1)] = 1
         return combined_binary
 
-    def get_perspective_transform_matrix(self, reverse=False):
-        matrix_key = 'perspective_transform_mtx'
-        if reverse:
-            matrix_key = 'reverse_perspective_transform_mtx'
-
-        matrix = getattr(self, matrix_key, None)
-        if matrix is not None:
-            return matrix
-
-        # no previous stored matrix, calculate one
-        tls = (563, 470)  # top left source point
-        bls = (220, 700)  # bottom left source point
-        tld = (300, 300)  # top left destination
-        bld = (300, 720)  # bottom left destination
-
-        src = np.float32([
-            [tls[0], tls[1]],
-            [self.width-tls[0], tls[1]],
-            [self.width-bls[0], bls[1]],
-            [bls[0], bls[1]]
-        ])
-
-        dst = np.float32([
-            [tld[0], tld[1]],
-            [self.width-tld[0], tld[1]],
-            [self.width-tld[0], bld[1]],
-            [bld[0], bld[1]],
-        ])
-
-        if reverse:
-            transform_mtx = cv2.getPerspectiveTransform(dst, src)
-        else:
-            transform_mtx = cv2.getPerspectiveTransform(src, dst)
-
-        # save matrix for later use
-        setattr(self, matrix_key, transform_mtx)
-        return transform_mtx
-
-    def perspective_transform(self, img, reverse=False):
-        """Transform car camera image into birds eye view"""
-        transform_mtx = self.get_perspective_transform_matrix(reverse=reverse)
-        shape = (self.width, self.height)
-        warped = cv2.warpPerspective(
-            img, transform_mtx, shape, flags=cv2.INTER_LINEAR)
-        return warped
-
     def histogram_find_lines(self, binary_warped):
         """Find left/right lane line indices from the binary warped
         image without knowing previous line positions using the

@@ -2,25 +2,27 @@
 from lanelines import LaneFinder
 from moviepy.editor import VideoFileClip
 from utils import CameraCalibrator
+from utils import PerspectiveTransform
 import cv2
 import numpy as np
 
 lf = LaneFinder()
 INPUT_FILE_NAME = 'project_video.mp4'
 OUTPUT_FILE_NAME = 'project_result.mp4'
-VIDEO_IMG_SIZE = (720, 1280)
+IMAGE_SHAPE = (720, 1280)
 CHESSBOARD_IMGS_GLOB = './camera_cal/*.jpg'
 CHESSBOARD_CORNERS = (9, 5)
 
 camera_calibrator = CameraCalibrator(
-    VIDEO_IMG_SIZE, CHESSBOARD_IMGS_GLOB, CHESSBOARD_CORNERS)
+    IMAGE_SHAPE, CHESSBOARD_IMGS_GLOB, CHESSBOARD_CORNERS)
+p_transformer = PerspectiveTransform(IMAGE_SHAPE)
 
 
 def lane_detection(img, visualize=False):
 
     img = camera_calibrator.undistort_image(img)
 
-    warped = lf.perspective_transform(img)
+    warped = p_transformer.transform(img)
     combined_binary = lf.combined_thresholding(warped)
     left_fit, right_fit = lf.find_lines(combined_binary)
     result = np.dstack((combined_binary, combined_binary, combined_binary))*255
@@ -35,7 +37,7 @@ def lane_detection(img, visualize=False):
 
     cp = np.zeros_like(result)
     cv2.fillPoly(cp, np.int_([pts]), (0, 255, 0))
-    road = lf.perspective_transform(cp, reverse=True)
+    road = p_transformer.revert(cp)
     result = cv2.addWeighted(img, 1.0, road, 0.3, 0)
 
     # Calculate curvature radius of both lines and average them

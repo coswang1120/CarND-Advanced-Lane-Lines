@@ -16,8 +16,8 @@ DISTORTION_MATRIX_FILE = 'camera_matrix.p'
 
 class CameraCalibrator():
 
-    def __init__(self, image_size, chessboard_imgs_glob, chessboard_corners):
-        self.image_size = image_size
+    def __init__(self, image_shape, chessboard_imgs_glob, chessboard_corners):
+        self.image_shape = image_shape
         self.chessboard_imgs_glob = chessboard_imgs_glob
         self.chessboard_corners = chessboard_corners
 
@@ -43,7 +43,7 @@ class CameraCalibrator():
                     img_points.append(corners)
 
             ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(
-                    obj_points, img_points, self.image_size, None, None)
+                    obj_points, img_points, self.image_shape, None, None)
 
             # Save the camera calibration result for later use
             self.camera_matrix = {
@@ -62,3 +62,46 @@ class CameraCalibrator():
         dist = self.camera_matrix['dist']
         undistorted = cv2.undistort(img, mtx, dist, None, mtx)
         return undistorted
+
+
+class PerspectiveTransform():
+
+    def __init__(self, image_shape):
+        height, width = image_shape
+        self.width = width
+        self.height = height
+        self.image_shape = image_shape
+
+        # TODO(Olala): turn hard coded coordinates into calculated
+        tls = (563, 470)  # top left source point
+        bls = (220, 700)  # bottom left source point
+        tld = (300, 300)  # top left destination
+        bld = (300, 720)  # bottom left destination
+
+        src = np.float32([
+            [tls[0], tls[1]],
+            [width - tls[0], tls[1]],
+            [width - bls[0], bls[1]],
+            [bls[0], bls[1]]
+        ])
+
+        dst = np.float32([
+            [tld[0], tld[1]],
+            [width - tld[0], tld[1]],
+            [width - tld[0], bld[1]],
+            [bld[0], bld[1]],
+        ])
+
+        self.transform_matrix = cv2.getPerspectiveTransform(src, dst)
+        self.revert_matrix = cv2.getPerspectiveTransform(dst, src)
+
+    def transform(self, img):
+        return self._warp_perspective(img, self.transform_matrix)
+
+    def revert(self, img):
+        return self._warp_perspective(img, self.revert_matrix)
+
+    def _warp_perspective(self, img, matrix):
+        # warpPerspective expect shape in (width, height)
+        shape = (self.width, self.height)
+        return cv2.warpPerspective(img, matrix, shape, flags=cv2.INTER_LINEAR)
