@@ -2,4 +2,4 @@
 .ipynb_checkpoints/
 bin/
 __pycache__/
-*.mp4
+*result.mp4
