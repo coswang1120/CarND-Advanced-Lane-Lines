@@ -15,6 +15,7 @@ DISTORTION_MATRIX_FILE = 'camera_matrix.p'
 
 
 class CameraCalibrator():
+    """ Calibrates camera distortion using chessboard images """
 
     def __init__(self, image_shape, chessboard_imgs_glob, chessboard_corners):
         self.image_shape = image_shape
@@ -65,6 +66,7 @@ class CameraCalibrator():
 
 
 class PerspectiveTransform():
+    """ Transforms road image into a birds eye view angle """
 
     def __init__(self, image_shape):
         height, width = image_shape
@@ -105,3 +107,59 @@ class PerspectiveTransform():
         # warpPerspective expect shape in (width, height)
         shape = (self.width, self.height)
         return cv2.warpPerspective(img, matrix, shape, flags=cv2.INTER_LINEAR)
+
+
+class RoadMarkingDetector():
+
+    def __init__(self):
+        self.s_magnitude_thresh = (175, 255)
+        self.sobel_kernel = 7
+        self.m_thresh = (14, 255)
+        self.d_thresh = (0.0, 0.73)
+
+    def find_marking_pixels(self, img):
+        """ Returns a bitmap of road marking pixels """
+        s_mag = self._s_magnitude(img)
+        l_dir = self._l_direction(img)
+        combined_binary = np.zeros_like(img[:, :, 1])
+        combined_binary[(s_mag == 1) | (l_dir == 1)] = 1
+        return combined_binary
+
+    def _s_magnitude(self, img):
+        """Returns magnitude thresholded binary image of
+        the S channel in HLS color space
+        """
+        thresh = self.s_magnitude_thresh
+        hls = cv2.cvtColor(img, cv2.COLOR_BGR2HLS)
+        s_channel = hls[:, :, 2]
+        magnitude_binary = np.zeros_like(s_channel)
+        magnitude_binary[
+            (s_channel >= thresh[0]) & (s_channel <= thresh[1])] = 1
+        return magnitude_binary
+
+    def _l_direction(self, img):
+        """ Apply sobel filter on L(HLS) channel and threshold,
+        filter pixels direction inside self.d_thresh and
+        filter pixels magnitude inside self.m_thresh
+        """
+        sobel_kernel = self.sobel_kernel
+        m_thresh = self.m_thresh
+        d_thresh = self.d_thresh
+
+        hls = cv2.cvtColor(img, cv2.COLOR_BGR2HLS)
+        l_channel = hls[:, :, 1]
+        sobelx = cv2.Sobel(l_channel, cv2.CV_64F, 1, 0, ksize=sobel_kernel)
+        sobely = cv2.Sobel(l_channel, cv2.CV_64F, 0, 1, ksize=sobel_kernel)
+
+        magnitude = np.sqrt(np.square(sobelx)+np.square(sobely))
+        scaled = np.uint8(255*magnitude/np.max(magnitude))
+        abs_sobelx = np.absolute(sobelx)
+        abs_sobely = np.absolute(sobely)
+        direction = np.arctan2(abs_sobely, abs_sobelx)
+        binary_output = np.zeros_like(direction)
+        binary_output[
+            (direction >= d_thresh[0]) &
+            (direction <= d_thresh[1]) &
+            (scaled >= m_thresh[0]) &
+            (scaled <= m_thresh[1])] = 1
+        return binary_output

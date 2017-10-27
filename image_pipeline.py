@@ -3,6 +3,7 @@ from lanelines import LaneFinder
 from moviepy.editor import VideoFileClip
 from utils import CameraCalibrator
 from utils import PerspectiveTransform
+from utils import RoadMarkingDetector
 import cv2
 import numpy as np
 
@@ -16,6 +17,7 @@ CHESSBOARD_CORNERS = (9, 5)
 camera_calibrator = CameraCalibrator(
     IMAGE_SHAPE, CHESSBOARD_IMGS_GLOB, CHESSBOARD_CORNERS)
 p_transformer = PerspectiveTransform(IMAGE_SHAPE)
+marking_detector = RoadMarkingDetector()
 
 
 def lane_detection(img, visualize=False):
@@ -23,9 +25,10 @@ def lane_detection(img, visualize=False):
     img = camera_calibrator.undistort_image(img)
 
     warped = p_transformer.transform(img)
-    combined_binary = lf.combined_thresholding(warped)
+    combined_binary = marking_detector.find_marking_pixels(warped)
     left_fit, right_fit = lf.find_lines(combined_binary)
     result = np.dstack((combined_binary, combined_binary, combined_binary))*255
+    return result
 
     ploty = np.linspace(0, lf.height-1, lf.height)
     left_fitx = left_fit[0]*ploty**2 + left_fit[1]*ploty + left_fit[2]
